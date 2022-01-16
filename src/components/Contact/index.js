@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { validateEmail } from "../../utils/helpers";
 
 const ContactForm = () => {
 	// Hook that'll manage the form data.
@@ -7,22 +8,46 @@ const ContactForm = () => {
 		email: "",
 		message: "",
 	});
-	const { name, email, message } = formState;
 
-	// Sync the internal state of the componenet "formState" with the user input from the DOM.
-	// The "onChange" event listener will ensure that the "handleChange" function fires whenever a keystroke is typed into the input field for "name".
-	const handleChange = (e) => {
-		// Using the "setFormState" function to update the "formState" value for the "name" property.
-		// We use the spread operator, "...formState", so we can retain the other key-value pairs in this object. Without the spread operator, the "formState" object would be overwritten to only contain the " name: value" key pair.
-		setFormState({ ...formState, [e.target.name]: e.target.value });
-	};
+	const [errorMessage, setErrorMessage] = useState("");
+	const { name, email, message } = formState;
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		console.log(formState);
 	};
-
 	// console.log(formState);
+
+	// Sync the internal state of the componenet "formState" with the user input from the DOM.
+	// The "onChange" event listener will ensure that the "handleChange" function fires whenever a keystroke is typed into the input field for "name".
+	const handleChange = (e) => {
+		if (e.target.name === "email") {
+			const isValid = validateEmail(e.target.value);
+			console.log(isValid);
+
+			// isValid conditional statement
+			if (!isValid) {
+				setErrorMessage("Your email is invalid.");
+			} else {
+				setErrorMessage("");
+			}
+		} else {
+			// Checking the "message" & "name" form element values.
+			if (!e.target.value.length) {
+				setErrorMessage(`${e.target.name} is required.`);
+			} else {
+				setErrorMessage("");
+			}
+		}
+
+		// Using the "setFormState" function to update the "formState" value for the "name" property.
+		// We use the spread operator, "...formState", so we can retain the other key-value pairs in this object. Without the spread operator, the "formState" object would be overwritten to only contain the " name: value" key pair.
+		if (!errorMessage) {
+			setFormState({ ...formState, [e.target.name]: e.target.value });
+		}
+
+		// console.log("errorMessage", errorMessage);
+	};
 
 	return (
 		<section>
@@ -35,7 +60,7 @@ const ContactForm = () => {
 						type="text"
 						name="name"
 						defaultValue={name}
-						onChange={handleChange}
+						onBlur={handleChange}
 					/>
 				</div>
 
@@ -45,7 +70,7 @@ const ContactForm = () => {
 						type="email"
 						name="email"
 						defaultValue={email}
-						onChange={handleChange}
+						onBlur={handleChange}
 					/>
 				</div>
 
@@ -55,8 +80,13 @@ const ContactForm = () => {
 						name="message"
 						rows="5"
 						defaultValue={message}
-						onChange={handleChange}
+						onBlur={handleChange}
 					/>
+					{errorMessage && (
+						<div>
+							<p className="error-text">{errorMessage}</p>
+						</div>
+					)}
 				</div>
 
 				<button type="submit">Submit</button>
